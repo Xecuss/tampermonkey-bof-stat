@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BOF Stat
 // @namespace    http://tampermonkey.net/
-// @version      0.1.2
+// @version      0.1.3
 // @description  在BOF详情页显示投票的地区详情表格
 // @author       Xs!
 // @match        https://manbow.nothing.sh/event/event.cgi?action=More_def*
@@ -21,12 +21,12 @@
         const postList = [...document.querySelectorAll('.feature-box')];
         let res = [];
         for(let item of postList) {
-            const pointEl = item.querySelector('.points_oneline');
+            const imgEl = item.querySelector('img.flag')
             const tempRes = {
                 type: 'vote',
                 point: Number(item.querySelector('.fbox-icon').textContent),
                 name: item.querySelector('h4.nobottommargin').textContent.trim(),
-                region: item.querySelector('img.flag').title,
+                region: imgEl ? imgEl.title : '?',
             };
             res.push(tempRes);
         }
@@ -42,11 +42,12 @@
         let res = [];
         for(let item of postList) {
             const pointEl = item.querySelector('.points_oneline');
+            const imgEl = item.querySelector('img.flag');
             const tempRes = {
                 type: 'short',
                 point: pointEl ? Number(pointEl.textContent) : -1,
                 name: item.querySelector('.icon-user').parentNode.textContent.trim(),
-                region: item.querySelector('img.flag').title,
+                region: imgEl ? imgEl.title : '?',
                 content: item.querySelectorAll('.entry-title')[1].textContent
             };
             res.push(tempRes);
@@ -74,11 +75,12 @@
                 continue;
             }
             const pointEl = item.querySelector('.points_normal');
+            const imgEl = item.querySelector('img.flag');
             const tempRes = {
                 type: 'response',
                 point: pointEl ? Number(pointEl.textContent): -1,
                 name: item.querySelector('.entry-title strong').textContent.trim(),
-                region: item.querySelector('img.flag').title,
+                region: imgEl ? imgEl.title : '?',
                 content: contentEl.innerHTML,
                 label: [...item.querySelectorAll('.label')].map(label => label.textContent.trim())
             };
@@ -170,10 +172,13 @@
             const pointPercent = (point / sumPoint* 100).toFixed(2);
             const avgPoint = (point / pCount).toFixed(2);
             const onlyComment = count - pCount;
+            const regionIcon = regionName !== '?' ?
+                `<img src="./images/flags/${regionName}.png" class="flag" style="margin-right: 5px; vertical-align: top;">`
+                :
+                '';
             return `<tr>
             <th>
-                <img src="./images/flags/${regionName}.png" class="flag" style="margin-right: 5px; vertical-align: top;">
-                ${regionName}
+                ${regionIcon}${regionName}
             </th>
             <th class="region_point">${point}</th>
             <th>${pointPercent}%</th>
