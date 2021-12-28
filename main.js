@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BOF Stat
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.1.1
 // @description  在BOF详情页显示投票的地区详情表格
 // @author       Xs!
 // @match        https://manbow.nothing.sh/event/event.cgi?action=More_def*
@@ -27,8 +27,8 @@
                 point: Number(item.querySelector('.fbox-icon').textContent),
                 name: item.querySelector('h4.nobottommargin').textContent.trim(),
                 region: item.querySelector('img.flag').title,
-            }
-            res.push(tempRes)
+            };
+            res.push(tempRes);
         }
         return res;
     }
@@ -48,35 +48,55 @@
                 name: item.querySelector('.icon-user').parentNode.textContent.trim(),
                 region: item.querySelector('img.flag').title,
                 content: item.querySelectorAll('.entry-title')[1].textContent
-            }
-            res.push(tempRes)
+            };
+            res.push(tempRes);
         }
         return res;
     }
     /*
      * 统计长评结果
      * 分数结果 type = 'long'
-     * 包含 point、name、region、content、label 五个字段
+     * 包含 point、name、region、content、label、responses 五个字段
      * label 是一个string[]，包含形如 labelName: labelValue 形式的字符串
+     * responses 是一个长评数组，包含此条长评的回复
      */
     function statLong() {
-        const postList = [...document.querySelectorAll('.points_normal')].map(node => node.parentNode.parentNode);
+        const postList = [...document.querySelectorAll('.col_full + .spost')];
         let res = [];
+        let rootTemp = null;
         for(let item of postList) {
+            const contentEl = item.nextElementSibling;
+            if(contentEl.querySelector('button[name=shortimpressionr-form-submit]')) {
+                if(rootTemp) {
+                    res.push(rootTemp);
+                    rootTemp = null;
+                }
+                continue;
+            }
+            const pointEl = item.querySelector('.points_normal');
             const tempRes = {
                 type: 'long',
-                point: Number(postList[0].querySelector('.points_normal').textContent),
-                name: item.querySelector('.entry-title').textContent.trim(),
+                point: pointEl ? Number(pointEl.textContent): -1,
+                name: item.querySelector('.entry-title strong').textContent.trim(),
                 region: item.querySelector('img.flag').title,
-                content: item.nextElementSibling.innerHTML,
+                content: contentEl.innerHTML,
                 label: [...item.querySelectorAll('.label')].map(label => label.textContent.trim())
+            };
+            if(rootTemp) {
+                rootTemp.responses.push(tempRes);
             }
-            res.push(tempRes)
+            else {
+                rootTemp = {
+                    ...tempRes,
+                    responses: []
+                }
+            }
         }
         return res;
     }
     // 取得所有的投票结果，可以直接处理这个数组
     const resJson = [...statVote(), ...statShort(), ...statLong()];
+    console.log('[BOF Stat] 获取数据：', resJson);
 
     // 统计各个地区的投票情况
     function statRegion() {
@@ -100,13 +120,20 @@
                 voteSum += 1;
             }
         }
+        // 展开成数组并排序
+        const resArr = Object.getOwnPropertyNames(resObj)
+        .map(region => ({
+            name: region,
+            result: resObj[region]
+        }))
+        .sort((l, r) => r.result.point - l.result.point);
+
         return {
-            regionData: resObj,
+            regionData: resArr,
             sumPoint,
             voteSum
         };
     }
-    const renderList = [];
 
     // 渲染区域统计结果
     function renderRegion(regionObj) {
@@ -127,17 +154,18 @@
             <th>仅评论数</th>
         </tr>
         </thead>`;
-        resHtml += Object.getOwnPropertyNames(regionData)
-        .map(c => {
-            const { count, point, pCount } = regionData[c];
+        resHtml += regionData
+        .map(region => {
+            const regionName = region.name;
+            const { count, point, pCount } = region.result;
             const countPercent = (pCount / voteSum * 100).toFixed(2);
             const pointPercent = (point / sumPoint* 100).toFixed(2);
             const avgPoint = (point / pCount).toFixed(2);
             const onlyComment = count - pCount;
             return `<tr>
             <th>
-                <img src="./images/flags/${c}.png" class="flag" style="margin-right: 5px; vertical-align: top;">
-                ${c}
+                <img src="./images/flags/${regionName}.png" class="flag" style="margin-right: 5px; vertical-align: top;">
+                ${regionName}
             </th>
             <th>${point}</th>
             <th>${pointPercent}%</th>
