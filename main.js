@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BOF Stat
 // @namespace    http://tampermonkey.net/
-// @version      0.1.1
+// @version      0.1.2
 // @description  在BOF详情页显示投票的地区详情表格
 // @author       Xs!
 // @match        https://manbow.nothing.sh/event/event.cgi?action=More_def*
@@ -54,8 +54,8 @@
         return res;
     }
     /*
-     * 统计长评结果
-     * 分数结果 type = 'long'
+     * 统计长评及其回复结果
+     * type = 'long' / 'response'
      * 包含 point、name、region、content、label、responses 五个字段
      * label 是一个string[]，包含形如 labelName: labelValue 形式的字符串
      * responses 是一个长评数组，包含此条长评的回复
@@ -75,7 +75,7 @@
             }
             const pointEl = item.querySelector('.points_normal');
             const tempRes = {
-                type: 'long',
+                type: 'response',
                 point: pointEl ? Number(pointEl.textContent): -1,
                 name: item.querySelector('.entry-title strong').textContent.trim(),
                 region: item.querySelector('img.flag').title,
@@ -88,6 +88,7 @@
             else {
                 rootTemp = {
                     ...tempRes,
+                    type: 'long',
                     responses: []
                 }
             }
@@ -103,16 +104,23 @@
         let resObj = {};
         let sumPoint = 0;
         let voteSum = 0;
-        for(let item of resJson) {
+        // 把长评的回复展开
+        const wraplongRes = resJson.filter(item => item.type === 'long').reduce((prev, current) => {
+            return prev.concat(current.responses);
+        }, []);
+        const resAll = [...resJson, ...wraplongRes];
+        for(let item of resAll) {
             const region = item.region;
             if(!resObj[region]) {
                 resObj[region] = {
                     count: 0,
                     point: 0,
                     pCount: 0,
+                    posts: []
                 };
             }
             resObj[region].count += 1;
+            resObj[region].posts.push(item);
             if(item.point !== -1) {
                 resObj[region].point += item.point;
                 resObj[region].pCount += 1;
@@ -167,7 +175,7 @@
                 <img src="./images/flags/${regionName}.png" class="flag" style="margin-right: 5px; vertical-align: top;">
                 ${regionName}
             </th>
-            <th>${point}</th>
+            <th class="region_point">${point}</th>
             <th>${pointPercent}%</th>
             <th>${pCount}</th>
             <th>${countPercent}%</th>
