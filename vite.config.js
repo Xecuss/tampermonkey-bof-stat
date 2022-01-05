@@ -5,6 +5,9 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [svelte()],
+  resolve: {
+    alias: [{find: 'src', replacement: resolve('src')}]
+  },
   build: {
     target: 'es2017',
     minify: false,

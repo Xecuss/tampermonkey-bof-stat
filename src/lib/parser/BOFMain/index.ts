@@ -1,4 +1,5 @@
-import { ILongPostItem, IPostItem, IResponsePostItem, IShortPostItem, IVotePostItem, POST_TYPE } from "src/interface/post.interface";
+import type { IParser } from "src/interface/parser.interface";
+import { ILongPostItem, IResponsePostItem, IShortPostItem, IVotePostItem, POST_TYPE } from "src/interface/post.interface";
 
 function statVote() {
     const postList = [...document.querySelectorAll('.feature-box')];
@@ -70,7 +71,9 @@ function statLong() {
     }
     return res;
 }
-
-export function parse(): IPostItem[] {
-    return [...statVote(), ...statShort(), ...statLong()];
+export const BOFMainParser: IParser = {
+    adaptTo: [],
+    parse() {
+        return [...statVote(), ...statShort(), ...statLong()];
+    }
 }
