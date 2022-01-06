@@ -1,5 +1,5 @@
 // 投票类型
-export enum POST_TYPE {
+export const enum POST_TYPE {
     // 投票
     VOTE,
     // 短评

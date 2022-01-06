@@ -34,12 +34,12 @@
 import type { IPostItem } from "src/interface/post.interface";
 import { statRegion } from "src/lib/regionStat";
 
-export const data: IPostItem[] = [];
+export let data: IPostItem[] = [];
 
 $: regionResult = (() => {
     const result = statRegion(data);
-    const { sumPoint, voteSum } = result;
-    return result.regionData.map(item => {
+    const { sumPoint, voteSum, regionData } = result;
+    return regionData.map(item => {
         const { count, point, pCount } = item.result;
         return {
             regionName: item.name,
@@ -51,5 +51,5 @@ $: regionResult = (() => {
             ...item.result
         };
     })
-})()
+})();
 </script>
