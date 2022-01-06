@@ -1,7 +1,8 @@
 {
   "name": "bof-stat2",
-  "version": "0.0.0",
+  "version": "0.1.3",
   "type": "module",
+  "description": "在BOF详情页显示投票的地区详情表格",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -16,6 +17,16 @@
     "svelte-preprocess": "^4.9.8",
     "tslib": "^2.3.1",
     "typescript": "^4.4.4",
-    "vite": "^2.7.2"
-  }
+    "vite": "^2.7.2",
+    "vite-plugin-banner": "^0.1.3"
+  },
+  "tampermonkey": {
+    "name": "BOF Stat",
+    "namespace": "http://tampermonkey.net/",
+    "icon": "https://www.google.com/s2/favicons?domain=nothing.sh",
+    "grant": "none",
+    "match": "https://manbow.nothing.sh/event/event.cgi?action=More_def*"
+  },
+  "license": "MIT",
+  "author": "Xs!"
 }

@@ -72,7 +72,7 @@ function statLong() {
     return res;
 }
 export const BOFMainParser: IParser = {
-    adaptTo: [],
+    adaptTo: ['123'],
     parse() {
         return [...statVote(), ...statShort(), ...statLong()];
     }
