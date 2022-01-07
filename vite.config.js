@@ -18,7 +18,7 @@ function generateTampermonkeyMeta() {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [svelte(), Banner(generateTampermonkeyMeta())],
+  plugins: [svelte({ emitCss: false }), Banner(generateTampermonkeyMeta())],
   resolve: {
     alias: [{find: 'src', replacement: resolve('src')}]
   },

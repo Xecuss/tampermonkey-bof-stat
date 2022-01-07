@@ -15,7 +15,7 @@
             <tr>
                 <th>
                     {#if item.regionName !== '?'}
-                        <img src={item.icon} class="flag" style="margin-right: 5px; vertical-align: top;" alt={item.regionName}>
+                        <img src={item.icon} class="flag" alt={item.regionName}>
                     {/if}
                     {item.regionName}
                 </th>
@@ -53,3 +53,9 @@ $: regionResult = (() => {
     })
 })();
 </script>
+<style scoped> 
+.flag {
+    margin-right: 5px; 
+    vertical-align: top;
+}
+</style>
